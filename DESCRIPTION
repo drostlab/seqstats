@@ -1,0 +1,8 @@
+Package: seqstats
+Title: A Statistical Analysis Package for Biological Sequence Analyses. 
+Version: 0.0.1
+Authors@R: "Hajk-Georg Drost <hajk-georg.drost@informatik.uni-halle.de> [aut,cre]"
+Description: What the package does (one paragraph)
+Depends: R (>= 3.1.2)
+License: GPL-3
+LazyData: true
