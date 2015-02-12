@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 ## Biological Sequence Statistics 
 
-This section introduces the functions implemented in `biomartr` that aim to
+This section introduces the functions implemented in `seqstats` that aim to
 quantify the statistical significance of observed patterns obtained by biological sequence analyses.
 
 ### Random Sequence Generator
