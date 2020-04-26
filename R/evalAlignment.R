@@ -15,12 +15,12 @@
 #' @param comp_cores a numeric value specifying the number of cores you want to use for multicore processing.
 #' @details
 #' The test statistic is developed using moment matching estimation of a given probability distribution that
-#' is fitted to the alignment score vector returned by \code{\link{randSeqDistr}}. The corresponding distribution 
-#' parameters are estimated by the \code{\link[fitdistrplus]{fitdist}} and the p-value quantifying the statistical 
+#' is fitted to the alignment score vector returned by \code{\link{randSeqDistr}}. The corresponding distribution
+#' parameters are estimated by the \code{\link[fitdistrplus]{fitdist}} and the p-value quantifying the statistical
 #' significance of the pairwise alignment of the input sequences is returned.
-#' 
+#'
 #' The following distributions can be fitted to the alignment score distribution:
-#' 
+#'
 #' \itemize{
 #'  \item \code{\link{pnorm}}
 #'  \item \code{\link{plnorm}}
@@ -31,198 +31,268 @@
 #'  \item \code{\link{pgeom}}
 #'  \item \code{\link{pbeta}}
 #' }
-#' 
+#'
 #' A special case is \code{fit_distr} = \code{"simple"}. This way simply the relative frequency of random scores that are greater than
 #' the real alignment score is returned as p-value.
-#' 
+#'
 #' @author Hajk-Georg Drost
 #' @return a p-value quantifying the statistical significance of the pairwise alignment of the input sequences.
-#' @references
-#' 
-#'  M. L. Delignette-Muller, R. Pouillot, J.-B. Denis and C. Dutang (2014), fitdistrplus: help to fit of a parametric
-#'  distribution to non-censored or censored data.
-#'
 #' @examples
-#' 
 #' seq_example <- "MEDQVGFGF"
 #' subject_example <- "AYAIDPTPAF"
-#' 
-#' p_val_align <- evalAlignment(seq_example, subject_example, 10, 
-#'                              Biostrings::pairwiseAlignment, 
-#'                              scoreOnly=TRUE, fit_distr = "norm", 
+#' # evaluate alignment
+#' p_val_align <- evalAlignment(seq_example, subject_example, 10,
+#'                              Biostrings::pairwiseAlignment,
+#'                              scoreOnly=TRUE, fit_distr = "norm",
 #'                              comp_cores = 1)
-#'               
 #' @seealso \code{\link{randSeqDistr}}, \code{\link{randomSeqs}}, \code{\link[fitdistrplus]{fitdist}}
 #' @export
 
-evalAlignment <- function(seq, subject, sample_size, FUN, ... ,fit_distr = "norm",gof = FALSE, comp_cores = 1){
-        
-        if(!is.element(fit_distr,c("norm", "lnorm", "pois", "exp", "gamma", "nbinom", "geom", "beta","simple")))
-                stop("Please choose a distribution to fit your alignment scores that is supported by this function.")
-        
-        align.fun <- match.fun(FUN)
-        # random sequence vector
-        r_seqs <- vector(mode = "character", length = sample_size)
-        # alignment score vector of random seqs
-        scores <- vector(mode = "numeric", length = sample_size)
-        
-        p_val <- vector(mode = "numeric", length = 1)
-        real_score <- vector(mode = "numeric", length = 1)
-        
-        # determine the score of the real pairwise alignment
-        real_score <- align.fun(seq, subject, ...)
-        
-        # determine random scores
-        r_seqs <- randomSeqs(seq = seq,sample_size = sample_size)
-        scores <- randSeqDistr(seq = seq, subject = subject, 
-                               sampled_strings = r_seqs, 
-                               FUN = align.fun, ..., 
-                               comp_cores = comp_cores)
-        
-        
-        if(fit_distr == "norm"){
-                # paramter estimates of the normal distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+evalAlignment <-
+        function(seq,
+                 subject,
+                 sample_size,
+                 FUN,
+                 ... ,
+                 fit_distr = "norm",
+                 gof = FALSE,
+                 comp_cores = 1) {
+                if (!is.element(
+                        fit_distr,
+                        c(
+                                "norm",
+                                "lnorm",
+                                "pois",
+                                "exp",
+                                "gamma",
+                                "nbinom",
+                                "geom",
+                                "beta",
+                                "simple"
+                        )
+                ))
+                stop(
+                        "Please choose a distribution to fit your alignment scores that is supported by this function.", call. = 
+                )
                 
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                align.fun <- match.fun(FUN)
+                # random sequence vector
+                r_seqs <-
+                        vector(mode = "character", length = sample_size)
+                # alignment score vector of random seqs
+                scores <-
+                        vector(mode = "numeric", length = sample_size)
+                
+                p_val <- vector(mode = "numeric", length = 1)
+                real_score <- vector(mode = "numeric", length = 1)
+                
+                # determine the score of the real pairwise alignment
+                real_score <- align.fun(seq, subject, ...)
+                
+                # determine random scores
+                r_seqs <-
+                        randomSeqs(seq = seq, sample_size = sample_size)
+                scores <- randSeqDistr(
+                        seq = seq,
+                        subject = subject,
+                        sampled_strings = r_seqs,
+                        FUN = align.fun,
+                        ...,
+                        comp_cores = comp_cores
+                )
+                
+                
+                if (fit_distr == "norm") {
+                        # paramter estimates of the normal distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pnorm(
+                                        real_score,
+                                        mean = est$estimate[1],
+                                        sd = est$estimate[2],
+                                        lower.tail = FALSE
+                                )
                 }
                 
-                p_val <- pnorm(real_score, mean = est$estimate[1], sd = est$estimate[2], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "gamma"){
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                # paramter estimates of the gamma distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "gamma") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        # paramter estimates of the gamma distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pgamma(
+                                        real_score,
+                                        shape = est$estimate[1],
+                                        rate = est$estimate[2],
+                                        lower.tail = FALSE
+                                )
                 }
                 
-                p_val <- pgamma(real_score, shape = est$estimate[1], rate = est$estimate[2], lower.tail = FALSE)
-        }
-        
-        
-        if(fit_distr == "lnorm"){
-                # paramter estimates of the log-normal distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
                 
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "lnorm") {
+                        # paramter estimates of the log-normal distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::plnorm(
+                                        real_score,
+                                        meanlog = est$estimate[1],
+                                        sdlog = est$estimate[2],
+                                        lower.tail = FALSE
+                                )
                 }
                 
-                p_val <- plnorm(real_score, meanlog = est$estimate[1], sdlog = est$estimate[2], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "pois"){
-                
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                # paramter estimates of the poisson distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "pois") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        # paramter estimates of the poisson distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::ppois(real_score,
+                                      lambda = est$estimate[1],
+                                      lower.tail = FALSE)
                 }
                 
-                p_val <- ppois(real_score, lambda = est$estimate[1], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "exp"){
-                
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                # paramter estimates of the exponential distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "exp") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        # paramter estimates of the exponential distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pexp(real_score,
+                                     rate = est$estimate[1],
+                                     lower.tail = FALSE)
                 }
                 
-                p_val <- pexp(real_score, rate = est$estimate[1], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "nbinom"){
-                
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                # paramter estimates of the negative binomial distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "nbinom") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        # paramter estimates of the negative binomial distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pnbinom(
+                                        real_score,
+                                        size = est$estimate[1],
+                                        mu = est$estimate[2],
+                                        lower.tail = FALSE
+                                )
                 }
                 
-                p_val <- pnbinom(real_score, size = est$estimate[1], mu = est$estimate[2], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "geom"){
-                
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                if(!is.integer(real_score))
-                        stop("Please specify a discrete (integer) input vector.")
-                
-                # paramter estimates of the geometric distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "geom") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        if (!is.integer(real_score))
+                                stop("Please specify a discrete (integer) input vector.", call. = FALSE)
+                        
+                        # paramter estimates of the geometric distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pgeom(real_score,
+                                      prob = est$estimate[1],
+                                      lower.tail = FALSE)
                 }
                 
-                p_val <- pgeom(real_score, prob = est$estimate[1], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "beta"){
-                
-                if(range(scores)[1] < 0)
-                        stop("Please choose a distribution to fit your alignment scores that supports negative values.")
-                
-                # paramter estimates of the beta distribution
-                # estimated by moment matching
-                est <- fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
-                
-                if(gof){
-                        print(fitdistrplus::gofstat(est))
-                        cat("\n")
+                if (fit_distr == "beta") {
+                        if (range(scores)[1] < 0)
+                                stop(
+                                        "Please choose a distribution to fit your alignment scores that supports negative values.", call. = FALSE
+                                )
+                        
+                        # paramter estimates of the beta distribution
+                        # estimated by moment matching
+                        est <-
+                                fitdistrplus::fitdist(scores, distr = fit_distr, method = "mme")
+                        
+                        if (gof) {
+                                message(fitdistrplus::gofstat(est))
+                                cat("\n")
+                        }
+                        
+                        p_val <-
+                                stats::pbeta(
+                                        real_score,
+                                        shape1 = est$estimate[1],
+                                        shape2 = est$estimate[2],
+                                        lower.tail = FALSE
+                                )
                 }
                 
-                p_val <- pbeta(real_score, shape1 = est$estimate[1], shape2 = est$estimate[2], lower.tail = FALSE)
-        }
-        
-        if(fit_distr == "simple"){
+                if (fit_distr == "simple") {
+                        p_val <- sum(scores > real_score) / length(scores)
+                }
                 
-                p_val <- sum(scores > real_score) / length(scores)
+                names(p_val) <- "p.value"
+                
+                return(p_val)
+                
         }
-        
-        names(p_val) <- "p.value"
-        
-        return(p_val)
-        
-}
-
-
-
-
-
