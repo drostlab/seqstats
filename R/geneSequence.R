@@ -8,17 +8,13 @@
 #' @details Sequence information is retrieved from the acnucdb database.
 #' @return A list of sequences for each corresponding input gene stored as string.
 #' @examples 
-#' 
 #' \dontrun{
-#' 
 #' # retrieve amino acid sequences from the 'swissprot' database 
 #' # for gene ids:"AT1G06090" = "Q9LND9" and "AT1G06100" = "Q9LND8"
-#' 
-#'  seqs <- geneSequence(c("Q9LND9","Q9LND8"), db = "swissprot")
-#'    
+#' seqs <- geneSequence(c("Q9LND9","Q9LND8"), db = "swissprot")
+#'   
 #' # choose different databases available
-#' 
-#'    choosebank()
+#' seqinr::choosebank()
 #' }
 #' 
 #' @export
