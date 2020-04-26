@@ -15,9 +15,12 @@ Imports: philentropy,
         Biostrings,
         seqinr,
         biomartr
+Suggests:
+    testthat,
+    knitr
 License: GPL-3
 LazyData: true
-RoxygenNote: 7.0.2
-URL: https://github.com/drostlab/seqstats
-BugReports: https://github.com/drostlab/seqstats/issues
 VignetteBuilder: knitr
+URL: https://github.com/drostlab/seqstats
+RoxygenNote: 7.0.2
+BugReports: https://github.com/drostlab/seqstats/issues
