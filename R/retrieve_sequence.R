@@ -9,8 +9,8 @@ retrieve_sequence <- function(gene){
 
         query <- input <- NULL
 
-        query_string <- paste0("AC=",gene)
-        try(query("input",query_string))
+        query_string <- paste0("AC=", gene)
+        try(query("input", query_string))
         gene_sequence <- seqinr::getSequence(input$req[[1]])
         return(gene_sequence)
 
