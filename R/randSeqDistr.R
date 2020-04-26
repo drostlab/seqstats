@@ -12,11 +12,9 @@
 #' @author Hajk-Georg Drost
 #' @return a numeric vector storing pairwise alignment scores.
 #' @examples 
-#' 
 #' # pairwise alignments using Biostrings::pairwiseAlignment() function
 #' # you can also specify the comp_cores argument in case you 
 #' # are working with a multicore machine 
-#' 
 #' seq_example <- "MEDQVGFGF"
 #' subject_example <- "AYAIDPTPAF"
 #' 
@@ -25,8 +23,6 @@
 #'                            Biostrings::pairwiseAlignment, 
 #'                            scoreOnly  = TRUE, 
 #'                            comp_cores = 1)
-#'  
-#'    
 #' @seealso \code{\link{evalAlignment}}, \code{\link{randomSeqs}}       
 #' @import foreach
 #' @export  
@@ -34,7 +30,7 @@
 randSeqDistr <- function(seq, subject, sampled_strings, FUN, ... , comp_cores = 1){
         
         if(!all(is.character(seq),is.character(subject)))
-                stop("Please insert a string as seq argument.")
+                stop("Please insert a string as seq argument.", call. = FALSE)
         
         # get sequence length
         l <- nchar(seq)
@@ -42,13 +38,13 @@ randSeqDistr <- function(seq, subject, sampled_strings, FUN, ... , comp_cores = 
         i <- NULL
         
         if(length(seq) > 1)
-                stop("Please insert a string as seq argument.")
+                stop("Please insert a string as seq argument.", call. = FALSE)
         
         if(length(subject) > 1)
-                stop("Please insert a string as subject argument.")
+                stop("Please insert a string as subject argument.", call. = FALSE)
         
         if((l == 1) | (s == 1))
-                warning("Are you sure that you want to randomly sample one letter?")
+                warning("Are you sure that you want to randomly sample one letter?", call. = FALSE)
         
         align.fun <- match.fun(FUN)
         n_samples <- length(sampled_strings) 
@@ -64,7 +60,7 @@ randSeqDistr <- function(seq, subject, sampled_strings, FUN, ... , comp_cores = 
                 
                 if(comp_cores > cores)
                         stop("The number of cores you specified in the comp_cores argument exeeds the number of cores 
-                             available on your machine.")
+                             available on your machine.", call. = FALSE)
                 
                 par_cores <- parallel::makeForkCluster(comp_cores)
                 doParallel::registerDoParallel(par_cores)
