@@ -13,15 +13,12 @@
 #' @author Hajk-Georg Drost
 #' @return a character vector of length \code{sample_size} storing the random string objects.
 #' @examples
-#' 
 #' # a nucleotide example
 #' seq_example <- "ACCTGGAATTC"
-#' 
 #' randomSeqs(seq = seq_example, sample_size = 10)
 #' 
 #' # a protein example
 #' seq_example <- "NPPAAM"
-#' 
 #' randomSeqs(seq = seq_example, sample_size = 10)
 #' 
 #' @seealso \code{\link{evalAlignment}}, \code{\link{randSeqDistr}}
@@ -30,16 +27,16 @@ randomSeqs <- function(seq, sample_size){
         
         
         if(!is.character(seq))
-                stop("Please insert a string as seq argument.")
+                stop("Please insert a string as seq argument.", call. = FALSE)
         
         # get sequence length
         l <- nchar(seq)
         
         if(length(seq) > 1)
-                stop("Please insert a string as seq argument.")
+                stop("Please insert a string as seq argument.", call. = FALSE)
         
         if(l == 1)
-                warning("Are you sure that you want to randomly sample one letter?")
+                warning("Are you sure that you want to randomly sample one letter?", call. = FALSE)
         
         char_seq <- vector(mode = "character", length = l)
         char_seq <- seqinr::s2c(seq)
