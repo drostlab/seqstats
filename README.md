@@ -22,7 +22,7 @@ devtools::install_github("HajkD/seqstats", build_vignettes = TRUE, dependencies 
 
 The following tutorials will introduce you to the functionality of `seqstats` :
 
-- [Sequence Statistics](https://github.com/HajkD/seqstats/blob/master/vignettes/Statistics.Rmd)
+- [Sequence Statistics](https://drostlab.github.io/seqstats/articles/Statistics.html)
 
 
 ## Install on Windows
