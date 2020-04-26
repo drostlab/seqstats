@@ -9,6 +9,7 @@ vignette: >
 ---
 
 ```{r, echo = FALSE, message = FALSE}
+library(seqstats)
 options(width = 750)
 knitr::opts_chunk$set(
   comment = "#>",
@@ -85,7 +86,7 @@ Here, the p-value of the cooresponding global pairwise alignment between `MEDQVG
 
 ```{r,eval=FALSE}
 
-Biostrings::pairwiseAlignment(seq_example,subject_example)
+Biostrings::pairwiseAlignment(seq_example, subject_example)
 
 ```
 
