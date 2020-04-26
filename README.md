@@ -43,17 +43,6 @@ devtools::install_github("HajkD/seqstats", build_vignettes = TRUE, dependencies 
 library("seqstats", lib.loc = "C:/Program Files/R/R-3.1.1/library")
 ```
 
-## Discussions and Bug Reports
-
-I would be very happy to learn more about potential improvements of the concepts and functions
-provided in this package.
-
-Furthermore, in case you find some bugs or need additional (more flexible) functionality of parts
-of this package, please let me know:
-
-hajk-georg.drost@informatik.uni-halle.de
-
-
 
 
 
